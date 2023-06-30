@@ -1,0 +1,25 @@
+﻿<Project Sdk="Eto.Forms/2.7.5">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+
+		<IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+		<IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
+
+		<UseMacOSWorkload>True</UseMacOSWorkload>
+		<UseWinForms>True</UseWinForms>
+	</PropertyGroup>
+
+	<!--
+	Set the BuildPlatform property to the Eto platform you wish to build for.
+	The default is the platform you are building on.
+	Valid values: Wpf, Windows, Mac64, XamMac2, Gtk, Direct2D
+	-->
+	<PropertyGroup Condition="$(IsWindows)">
+		<BuildPlatform>Windows</BuildPlatform>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(IsOSX)">
+		<BuildPlatform>Mac64</BuildPlatform>
+	</PropertyGroup>
+
+</Project>

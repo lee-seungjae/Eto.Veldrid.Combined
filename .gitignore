@@ -1,0 +1,15 @@
+*.sdf
+*.opensdf
+*.suo
+*.ipch
+*.VC.db
+*.VC.opendb
+*.vcxproj.user
+
+.DS_Store
+.vs
+obj
+bin
+Debug
+Release
+*.user
