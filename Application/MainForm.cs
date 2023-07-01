@@ -1,6 +1,7 @@
 ﻿using Eto.Drawing;
 using Eto.Forms;
 using Eto.Veldrid;
+using System;
 using System.Diagnostics;
 using Veldrid;
 
@@ -10,39 +11,46 @@ namespace EtoMyApp
     {
         private VeldridSurface Surface;
         private VeldridDriver Driver;
-
-        private bool _veldridReady = false;
-        public bool VeldridReady
-        {
-            get { return this._veldridReady; }
-            private set
-            {
-                this._veldridReady = value;
-
-                this.SetUpVeldrid();
-            }
-        }
-
-        private bool _formReady = false;
-        public bool FormReady
-        {
-            get { return this._formReady; }
-            set
-            {
-                this._formReady = value;
-
-                this.SetUpVeldrid();
-            }
-        }
+        private readonly PixelLayout layout;
 
         public MainForm()
         {
             this.InitializeComponent();
 
-            var layout = new PixelLayout();
-            this.Content = layout;
+            this.layout = new PixelLayout();
+            this.Content = this.layout;
 
-            this.Shown += (sender, e) => this.FormReady = true;
+            this.SetUpVeldrid();
+
+            var drawable = new Drawable();
+            drawable.Size = new Size(100, 100);
+            this.layout.Add(drawable, Point.Empty);
+
+            var textArea = new TextArea();
+            textArea.Size = new Size(180, 20);
+            this.layout.Add(textArea, new Point(10, 10));
+
+            var timer = new UITimer();
+            timer.Interval = 0.01;
+            timer.Elapsed += (_, _) => drawable.Invalidate();
+            timer.Start();
+            drawable.Paint += (_, eventArgs) => {
+                var t = (DateTime.Now.Millisecond / 1000.0f * Math.PI * 2);
+                eventArgs.Graphics.DrawLine(Colors.Red, new PointF(50, 50), new PointF(50 + 50 * (float)Math.Cos(t), 50 + 50 * (float)Math.Sin(t)));
+                Debug.WriteLine("draw");
+            };
+
+            // TODO: Make this binding actually work both ways.
+            this.CmdAnimate.Bind<bool>("Checked", this.Driver, "Animate");
+            this.CmdClockwise.Bind<bool>("Checked", this.Driver, "Clockwise");
+        }
+
+        private void SetUpVeldrid()
+        {
+            // 플랫폼에 따라서 초기화 시점에 오류가 발생할 경우,
+            // 처음으로 this.Shown 이벤트가 왔을 때 초기화하면 된다.
+            // (원래 샘플이 그랬음)
+            // this.Shown += (sender, e) => SetUpVeldrid()
 
             // A depth buffer isn't strictly necessary for this project, which uses
             // only 2D vertex coordinates, but it's helpful to create one for the
@@ -58,44 +66,16 @@ namespace EtoMyApp
                 false,
                 ResourceBindingModel.Improved);
 
-            
             this.Surface = new VeldridSurface(GraphicsBackend.Direct3D11, options);
             this.Surface.Size = new Size(200, 200);
-            this.Surface.VeldridInitialized += (sender, e) => this.VeldridReady = true;
-
-            var drawable = new Drawable();
-            drawable.Size = new Size(100, 100);
-            layout.Add(drawable, Point.Empty);
-            layout.Add(this.Surface, new Point(100, 0));
-
-            var textArea = new TextArea();
-            textArea.Size = new Size(80, 20);
-            layout.Add(textArea, new Point(10, 10));
-
-            drawable.Paint += (_, eventArgs) => {
-                eventArgs.Graphics.DrawLine(Colors.Red, new PointF(0, 0), new PointF(100, 100));
-                Debug.WriteLine("draw");
-            };
-
-            this.Driver = new VeldridDriver(this.Surface);
-
-            // TODO: Make this binding actually work both ways.
-            this.CmdAnimate.Bind<bool>("Checked", this.Driver, "Animate");
-            this.CmdClockwise.Bind<bool>("Checked", this.Driver, "Clockwise");
-        }
-
-        private void SetUpVeldrid()
-        {
-            if (!(this.FormReady && this.VeldridReady))
+            this.Surface.VeldridInitialized += (sender, e) =>
             {
-                return;
-            }
+                this.Driver = new VeldridDriver(this.Surface);
+                this.Driver.Clock.Start();
+            };
+            this.layout.Add(this.Surface, new Point(100, 0));
 
-            this.Driver.SetUpVeldrid();
-
-            this.Title = $"Veldrid backend: {this.Surface.Backend.ToString()}";
-
-            this.Driver.Clock.Start();
+            this.Title = $"Veldrid backend: {this.Surface.Backend}";
         }
     }
 }

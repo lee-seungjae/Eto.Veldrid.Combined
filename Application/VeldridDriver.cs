@@ -81,8 +81,6 @@ namespace EtoMyApp
 
         public int Speed { get; set; } = 1;
 
-        private bool Ready = false;
-
         public VeldridDriver(VeldridSurface surface)
         {
             this.surface = surface;
@@ -95,6 +93,8 @@ namespace EtoMyApp
 
             this.Clock.Interval = 1.0f / 60.0f;
             this.Clock.Elapsed += this.Clock_Elapsed;
+
+            this.CreateResources();
         }
 
         private void Clock_Elapsed(object sender, EventArgs e) => this.surface.Invalidate();
@@ -104,11 +104,6 @@ namespace EtoMyApp
 
         public void Draw()
         {
-            if (!this.Ready)
-            {
-                return;
-            }
-
             this.CommandList.Begin();
 
             this.CurrentTime = DateTime.Now;
@@ -153,13 +148,6 @@ namespace EtoMyApp
 
             this.surface.GraphicsDevice.SubmitCommands(this.CommandList);
             this.surface.GraphicsDevice.SwapBuffers(this.surface.Swapchain);
-        }
-
-        public void SetUpVeldrid()
-        {
-            this.CreateResources();
-
-            this.Ready = true;
         }
 
         private void CreateResources()
