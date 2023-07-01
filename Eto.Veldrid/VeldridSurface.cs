@@ -35,8 +35,6 @@ namespace Eto.Veldrid
 
         protected override object GetCallback() => new Callback();
 
-        public static GraphicsBackend PreferredBackend { get; } = GetPreferredBackend();
-
         /// <summary>
         /// The render area's size, which may differ from the control's size
         /// (e.g. with high DPI displays).
@@ -55,7 +53,7 @@ namespace Eto.Veldrid
 
         public GraphicsBackend Backend { get; private set; }
         public GraphicsDevice GraphicsDevice { get; private set; }
-        public GraphicsDeviceOptions GraphicsDeviceOptions { get; private set; } = new GraphicsDeviceOptions();
+        public GraphicsDeviceOptions GraphicsDeviceOptions { get; private set; }
         public Swapchain Swapchain { get; private set; }
 
         public const string VeldridInitializedEvent = "VeldridSurface.VeldridInitialized";
@@ -78,39 +76,10 @@ namespace Eto.Veldrid
             remove { this.Properties.RemoveEvent(ResizeEvent, value); }
         }
 
-        public VeldridSurface()
-            : this(PreferredBackend)
-        {
-        }
-        public VeldridSurface(GraphicsBackend backend)
-        {
-            this.Backend = backend;
-        }
         public VeldridSurface(GraphicsBackend backend, GraphicsDeviceOptions gdOptions)
         {
             this.Backend = backend;
             this.GraphicsDeviceOptions = gdOptions;
-        }
-
-        private static GraphicsBackend GetPreferredBackend()
-        {
-            GraphicsBackend? backend = null;
-
-            if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Metal))
-            {
-                backend = GraphicsBackend.Metal;
-            }
-            else if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Direct3D11))
-            {
-                backend = GraphicsBackend.Direct3D11;
-            }
-
-            if (backend == null)
-            {
-                throw new VeldridException("VeldridSurface: No supported Veldrid backend found!");
-            }
-
-            return (GraphicsBackend)backend;
         }
 
         private void InitializeGraphicsBackend(InitializeEventArgs e)
@@ -127,25 +96,18 @@ namespace Eto.Veldrid
                     this.GraphicsDevice = GraphicsDevice.CreateVulkan(this.GraphicsDeviceOptions);
                     break;
                 default:
-                    string message;
-                    if (!Enum.IsDefined(typeof(GraphicsBackend), this.Backend))
-                    {
-                        message = "Unrecognized backend!";
-                    }
-                    else
-                    {
-                        message = "Specified backend not supported on this platform!";
-                    }
-
-                    throw new ArgumentException(message);
+                    throw new ArgumentException("Specified backend not supported!");
             }
 
             this.Swapchain = this.Handler.CreateSwapchain();
 
-            this.OnVeldridInitialized(e);
+            this.Properties.TriggerEvent(VeldridInitializedEvent, this, e);
         }
 
-        protected virtual void OnDraw(EventArgs e) => this.Properties.TriggerEvent(DrawEvent, this, e);
+        protected virtual void OnDraw(EventArgs e)
+        {
+            this.Properties.TriggerEvent(DrawEvent, this, e);
+        }
 
         protected virtual void OnResize(ResizeEventArgs e)
         {
@@ -156,7 +118,5 @@ namespace Eto.Veldrid
 
             this.Properties.TriggerEvent(ResizeEvent, this, e);
         }
-
-        protected virtual void OnVeldridInitialized(InitializeEventArgs e) => this.Properties.TriggerEvent(VeldridInitializedEvent, this, e);
     }
 }

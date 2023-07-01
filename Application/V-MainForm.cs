@@ -4,7 +4,7 @@ using Eto.Veldrid;
 using System.Diagnostics;
 using Veldrid;
 
-namespace TestEtoVeldrid
+namespace EtoMyApp
 {
     public partial class MainForm : Form
     {
@@ -35,17 +35,14 @@ namespace TestEtoVeldrid
             }
         }
 
-        public MainForm() : this(VeldridSurface.PreferredBackend)
-        {
-        }
-        public MainForm(GraphicsBackend backend)
+        public MainForm()
         {
             this.InitializeComponent();
 
             var layout = new PixelLayout();
             this.Content = layout;
 
-            Shown += (sender, e) => this.FormReady = true;
+            this.Shown += (sender, e) => this.FormReady = true;
 
             // A depth buffer isn't strictly necessary for this project, which uses
             // only 2D vertex coordinates, but it's helpful to create one for the
@@ -61,8 +58,9 @@ namespace TestEtoVeldrid
                 false,
                 ResourceBindingModel.Improved);
 
-            this.Surface = new VeldridSurface(backend, options);
-            this.Surface.Size = new Eto.Drawing.Size(200, 200);
+            
+            this.Surface = new VeldridSurface(GraphicsBackend.Direct3D11, options);
+            this.Surface.Size = new Size(200, 200);
             this.Surface.VeldridInitialized += (sender, e) => this.VeldridReady = true;
 
             var drawable = new Drawable();
@@ -74,16 +72,12 @@ namespace TestEtoVeldrid
             textArea.Size = new Size(80, 20);
             layout.Add(textArea, new Point(10, 10));
 
-
             drawable.Paint += (_, eventArgs) => {
                 eventArgs.Graphics.DrawLine(Colors.Red, new PointF(0, 0), new PointF(100, 100));
                 Debug.WriteLine("draw");
             };
 
-            this.Driver = new VeldridDriver
-            {
-                Surface = Surface
-            };
+            this.Driver = new VeldridDriver(this.Surface);
 
             // TODO: Make this binding actually work both ways.
             this.CmdAnimate.Bind<bool>("Checked", this.Driver, "Animate");

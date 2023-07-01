@@ -1,5 +1,4 @@
-﻿using Eto.Drawing;
-using Eto.Forms;
+﻿using Eto.Forms;
 using System;
 
 namespace EtoMyApp
@@ -9,7 +8,7 @@ namespace EtoMyApp
         [STAThread]
         private static void Main(string[] args)
         {
-            new Application(Eto.Platform.Detect).Run(new TestEtoVeldrid.MainForm());
+            new Application(Eto.Platform.Detect).Run(new MainForm());
         }
     }
 }
