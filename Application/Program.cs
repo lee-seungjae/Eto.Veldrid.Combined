@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Eto.Drawing;
 using Eto.Forms;
-using Eto.Drawing;
+using System;
 
 namespace EtoMyApp
 {
-	class Program
-	{
-		[STAThread]
-		static void Main(string[] args)
-		{
-			new Application(Eto.Platform.Detect).Run(new MainForm());
-		}
-	}
+    internal class Program
+    {
+        [STAThread]
+        private static void Main(string[] args)
+        {
+            new Application(Eto.Platform.Detect).Run(new TestEtoVeldrid.MainForm());
+        }
+    }
 }
