@@ -21,5 +21,8 @@
 	<PropertyGroup Condition="$(IsOSX)">
 		<BuildPlatform>Mac64</BuildPlatform>
 	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Eto.Veldrid\Eto.Veldrid.csproj" />
+	</ItemGroup>
 
 </Project>

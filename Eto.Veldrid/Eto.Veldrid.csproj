@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+		<IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
+	</PropertyGroup>
+		
+		
+	<PropertyGroup Condition="$(IsWindows)">
+		<TargetFrameworks>net6.0-windows</TargetFrameworks>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Eto.Forms" Version="2.7.5" />
+		<PackageReference Include="Veldrid" Version="4.7.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(IsWindows)">
+		<PackageReference Include="Eto.Platform.Windows" Version="2.7.5" />
+	</ItemGroup>
+
+</Project>
