@@ -1,6 +1,7 @@
-﻿using Eto.Forms;
+﻿using Eto.Drawing;
+using Eto.Forms;
 using Eto.Veldrid;
-using System;
+using System.Diagnostics;
 using Veldrid;
 
 namespace TestEtoVeldrid
@@ -13,24 +14,24 @@ namespace TestEtoVeldrid
         private bool _veldridReady = false;
         public bool VeldridReady
         {
-            get { return _veldridReady; }
+            get { return this._veldridReady; }
             private set
             {
-                _veldridReady = value;
+                this._veldridReady = value;
 
-                SetUpVeldrid();
+                this.SetUpVeldrid();
             }
         }
 
         private bool _formReady = false;
         public bool FormReady
         {
-            get { return _formReady; }
+            get { return this._formReady; }
             set
             {
-                _formReady = value;
+                this._formReady = value;
 
-                SetUpVeldrid();
+                this.SetUpVeldrid();
             }
         }
 
@@ -39,9 +40,12 @@ namespace TestEtoVeldrid
         }
         public MainForm(GraphicsBackend backend)
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            Shown += (sender, e) => FormReady = true;
+            var layout = new PixelLayout();
+            this.Content = layout;
+
+            Shown += (sender, e) => this.FormReady = true;
 
             // A depth buffer isn't strictly necessary for this project, which uses
             // only 2D vertex coordinates, but it's helpful to create one for the
@@ -53,38 +57,51 @@ namespace TestEtoVeldrid
             // will make more sense to developers used to e.g. OpenGL or Direct3D.
             var options = new GraphicsDeviceOptions(
                 false,
-                PixelFormat.R32_Float,
+                Veldrid.PixelFormat.R32_Float,
                 false,
                 ResourceBindingModel.Improved);
 
-            Surface = new VeldridSurface(backend, options);
-            Surface.Size = new Eto.Drawing.Size(200, 200);
-            Surface.VeldridInitialized += (sender, e) => VeldridReady = true;
+            this.Surface = new VeldridSurface(backend, options);
+            this.Surface.Size = new Eto.Drawing.Size(200, 200);
+            this.Surface.VeldridInitialized += (sender, e) => this.VeldridReady = true;
 
-            Content = Surface;
+            var drawable = new Drawable();
+            drawable.Size = new Size(100, 100);
+            layout.Add(drawable, Point.Empty);
+            layout.Add(this.Surface, new Point(100, 0));
 
-            Driver = new VeldridDriver
+            var textArea = new TextArea();
+            textArea.Size = new Size(80, 20);
+            layout.Add(textArea, new Point(10, 10));
+
+
+            drawable.Paint += (_, eventArgs) => {
+                eventArgs.Graphics.DrawLine(Colors.Red, new PointF(0, 0), new PointF(100, 100));
+                Debug.WriteLine("draw");
+            };
+
+            this.Driver = new VeldridDriver
             {
                 Surface = Surface
             };
 
             // TODO: Make this binding actually work both ways.
-            CmdAnimate.Bind<bool>("Checked", Driver, "Animate");
-            CmdClockwise.Bind<bool>("Checked", Driver, "Clockwise");
+            this.CmdAnimate.Bind<bool>("Checked", this.Driver, "Animate");
+            this.CmdClockwise.Bind<bool>("Checked", this.Driver, "Clockwise");
         }
 
         private void SetUpVeldrid()
         {
-            if (!(FormReady && VeldridReady))
+            if (!(this.FormReady && this.VeldridReady))
             {
                 return;
             }
 
-            Driver.SetUpVeldrid();
+            this.Driver.SetUpVeldrid();
 
-            Title = $"Veldrid backend: {Surface.Backend.ToString()}";
+            this.Title = $"Veldrid backend: {this.Surface.Backend.ToString()}";
 
-            Driver.Clock.Start();
+            this.Driver.Clock.Start();
         }
     }
 }

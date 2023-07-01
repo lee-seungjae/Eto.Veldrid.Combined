@@ -3,7 +3,7 @@ using Eto.Forms;
 
 namespace TestEtoVeldrid
 {
-	public partial class MainForm : Form
+    public partial class MainForm : Form
 	{
 		public CheckCommand CmdAnimate { get; } = new CheckCommand
 		{
@@ -20,8 +20,8 @@ namespace TestEtoVeldrid
 
 		private void InitializeComponent()
 		{
-			Title = "Veldrid in Eto";
-			ClientSize = new Size(400, 350);
+            this.Title = "Veldrid in Eto";
+            this.ClientSize = new Size(800, 600);
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += (sender, e) => Application.Instance.Quit();
@@ -29,14 +29,14 @@ namespace TestEtoVeldrid
 			var aboutCommand = new Command { MenuText = "About..." };
 			aboutCommand.Executed += (sender, e) => new AboutDialog().ShowDialog(this);
 
-			Menu = new MenuBar
+            this.Menu = new MenuBar
 			{
 				QuitItem = quitCommand,
 				AboutItem = aboutCommand,
 				Items =
 				{
 					new ButtonMenuItem { Text = "&File" },
-					new ButtonMenuItem { Text = "&View", Items = { CmdAnimate, CmdClockwise } }
+					new ButtonMenuItem { Text = "&View", Items = { this.CmdAnimate, this.CmdClockwise } }
 				}
 			};
 		}
