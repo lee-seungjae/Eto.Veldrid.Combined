@@ -2,7 +2,6 @@
 using Eto.Forms;
 using System;
 using Veldrid;
-using Veldrid.OpenGL;
 
 namespace Eto.Veldrid
 {
@@ -36,39 +35,23 @@ namespace Eto.Veldrid
 
         protected override object GetCallback() => new Callback();
 
-        public interface IOpenGL
-        {
-            IntPtr OpenGLContextHandle { get; }
-            IntPtr GetProcAddress(string name);
-            void MakeCurrent(IntPtr context);
-            IntPtr GetCurrentContext();
-            void ClearCurrentContext();
-            void DeleteContext(IntPtr context);
-            void SwapBuffers();
-            void SetSyncToVerticalBlank(bool enable);
-            void SetSwapchainFramebuffer();
-            void ResizeSwapchain(uint width, uint height);
-        }
-
-        public IOpenGL OpenGL => (IOpenGL)Handler;
-
         public static GraphicsBackend PreferredBackend { get; } = GetPreferredBackend();
 
         /// <summary>
         /// The render area's size, which may differ from the control's size
         /// (e.g. with high DPI displays).
         /// </summary>
-        public Size RenderSize => Handler.RenderSize;
+        public Size RenderSize => this.Handler.RenderSize;
         /// <summary>
         /// The render area's width, which may differ from the control's width
         /// (e.g. with high DPI displays).
         /// </summary>
-        public int RenderWidth => RenderSize.Width;
+        public int RenderWidth => this.RenderSize.Width;
         /// <summary>
         /// The render area's height, which may differ from the control's height
         /// (e.g. with high DPI displays).
         /// </summary>
-        public int RenderHeight => RenderSize.Height;
+        public int RenderHeight => this.RenderSize.Height;
 
         public GraphicsBackend Backend { get; private set; }
         public GraphicsDevice GraphicsDevice { get; private set; }
@@ -81,18 +64,18 @@ namespace Eto.Veldrid
 
         public event EventHandler<InitializeEventArgs> VeldridInitialized
         {
-            add { Properties.AddHandlerEvent(VeldridInitializedEvent, value); }
-            remove { Properties.RemoveEvent(VeldridInitializedEvent, value); }
+            add { this.Properties.AddHandlerEvent(VeldridInitializedEvent, value); }
+            remove { this.Properties.RemoveEvent(VeldridInitializedEvent, value); }
         }
         public event EventHandler<EventArgs> Draw
         {
-            add { Properties.AddHandlerEvent(DrawEvent, value); }
-            remove { Properties.RemoveEvent(DrawEvent, value); }
+            add { this.Properties.AddHandlerEvent(DrawEvent, value); }
+            remove { this.Properties.RemoveEvent(DrawEvent, value); }
         }
         public event EventHandler<ResizeEventArgs> Resize
         {
-            add { Properties.AddHandlerEvent(ResizeEvent, value); }
-            remove { Properties.RemoveEvent(ResizeEvent, value); }
+            add { this.Properties.AddHandlerEvent(ResizeEvent, value); }
+            remove { this.Properties.RemoveEvent(ResizeEvent, value); }
         }
 
         public VeldridSurface()
@@ -101,12 +84,12 @@ namespace Eto.Veldrid
         }
         public VeldridSurface(GraphicsBackend backend)
         {
-            Backend = backend;
+            this.Backend = backend;
         }
         public VeldridSurface(GraphicsBackend backend, GraphicsDeviceOptions gdOptions)
         {
-            Backend = backend;
-            GraphicsDeviceOptions = gdOptions;
+            this.Backend = backend;
+            this.GraphicsDeviceOptions = gdOptions;
         }
 
         private static GraphicsBackend GetPreferredBackend()
@@ -121,10 +104,6 @@ namespace Eto.Veldrid
             {
                 backend = GraphicsBackend.Direct3D11;
             }
-            else if (EtoEnvironment.Platform.IsLinux && GraphicsDevice.IsBackendSupported(GraphicsBackend.OpenGL))
-            {
-                backend = GraphicsBackend.OpenGL;
-            }
 
             if (backend == null)
             {
@@ -136,37 +115,20 @@ namespace Eto.Veldrid
 
         private void InitializeGraphicsBackend(InitializeEventArgs e)
         {
-            switch (Backend)
+            switch (this.Backend)
             {
                 case GraphicsBackend.Metal:
-                    GraphicsDevice = GraphicsDevice.CreateMetal(GraphicsDeviceOptions);
+                    this.GraphicsDevice = GraphicsDevice.CreateMetal(this.GraphicsDeviceOptions);
                     break;
                 case GraphicsBackend.Direct3D11:
-                    GraphicsDevice = GraphicsDevice.CreateD3D11(GraphicsDeviceOptions);
+                    this.GraphicsDevice = GraphicsDevice.CreateD3D11(this.GraphicsDeviceOptions);
                     break;
                 case GraphicsBackend.Vulkan:
-                    GraphicsDevice = GraphicsDevice.CreateVulkan(GraphicsDeviceOptions);
-                    break;
-                case GraphicsBackend.OpenGL:
-                    GraphicsDevice = GraphicsDevice.CreateOpenGL(
-                        GraphicsDeviceOptions,
-                        new OpenGLPlatformInfo(
-                            OpenGL.OpenGLContextHandle,
-                            OpenGL.GetProcAddress,
-                            OpenGL.MakeCurrent,
-                            OpenGL.GetCurrentContext,
-                            OpenGL.ClearCurrentContext,
-                            OpenGL.DeleteContext,
-                            OpenGL.SwapBuffers,
-                            OpenGL.SetSyncToVerticalBlank,
-                            OpenGL.SetSwapchainFramebuffer,
-                            OpenGL.ResizeSwapchain),
-                        (uint)e.Width,
-                        (uint)e.Height);
+                    this.GraphicsDevice = GraphicsDevice.CreateVulkan(this.GraphicsDeviceOptions);
                     break;
                 default:
                     string message;
-                    if (!Enum.IsDefined(typeof(GraphicsBackend), Backend))
+                    if (!Enum.IsDefined(typeof(GraphicsBackend), this.Backend))
                     {
                         message = "Unrecognized backend!";
                     }
@@ -178,23 +140,23 @@ namespace Eto.Veldrid
                     throw new ArgumentException(message);
             }
 
-            Swapchain = Handler.CreateSwapchain();
+            this.Swapchain = this.Handler.CreateSwapchain();
 
-            OnVeldridInitialized(e);
+            this.OnVeldridInitialized(e);
         }
 
-        protected virtual void OnDraw(EventArgs e) => Properties.TriggerEvent(DrawEvent, this, e);
+        protected virtual void OnDraw(EventArgs e) => this.Properties.TriggerEvent(DrawEvent, this, e);
 
         protected virtual void OnResize(ResizeEventArgs e)
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
 
-            Swapchain?.Resize((uint)e.Width, (uint)e.Height);
+            this.Swapchain?.Resize((uint)e.Width, (uint)e.Height);
 
-            Properties.TriggerEvent(ResizeEvent, this, e);
+            this.Properties.TriggerEvent(ResizeEvent, this, e);
         }
 
-        protected virtual void OnVeldridInitialized(InitializeEventArgs e) => Properties.TriggerEvent(VeldridInitializedEvent, this, e);
+        protected virtual void OnVeldridInitialized(InitializeEventArgs e) => this.Properties.TriggerEvent(VeldridInitializedEvent, this, e);
     }
 }
