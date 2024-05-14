@@ -6,8 +6,9 @@
 		
 		
 	<PropertyGroup Condition="$(IsWindows)">
-		<TargetFrameworks>net6.0-windows</TargetFrameworks>
+		<TargetFrameworks>net8.0-windows</TargetFrameworks>
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<NoWarn>NETSDK1206</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
