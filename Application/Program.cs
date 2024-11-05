@@ -8,7 +8,8 @@ namespace EtoMyApp
         [STAThread]
         private static void Main(string[] args)
         {
-            new Application(Eto.Platform.Detect).Run(new MainForm());
+            var app = new Application(Eto.Platform.Detect);
+            app.Run(new MainForm());
         }
     }
 }
